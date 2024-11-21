@@ -85,9 +85,7 @@ const Graph = () => {
                   radius={[4, 4, 0, 0]}
                   className="fill-primary"
                 />
-                <ChartTooltip>
-                  <ChartTooltipContent formatter={(value: number) => `$${value.toLocaleString()}`} />
-                </ChartTooltip>
+                <ChartTooltip content={<ChartTooltipContent formatter={(value: number) => `$${value.toLocaleString()}`} />} />
               </BarChart>
             </ChartContainer>
           </div>
