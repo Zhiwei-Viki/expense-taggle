@@ -3,21 +3,13 @@ import { useExpenses } from "@/context/ExpenseContext";
 import { ExpenseCard } from "./ExpenseCard";
 import { ExpenseForm } from "./ExpenseForm";
 import { Button } from "./ui/button";
-import { Calendar } from "./ui/calendar";
-import { format } from "date-fns";
+import { DateFilters } from "./DateFilters";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -74,66 +66,16 @@ export const ExpenseList = () => {
         <Button onClick={() => setIsAddDialogOpen(true)}>Add Expense</Button>
       </div>
 
-      <div className="flex gap-4 flex-wrap items-center">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "justify-start text-left font-normal",
-                !startDate && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {startDate ? format(startDate, "PPP") : "Start date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={startDate}
-              onSelect={setStartDate}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "justify-start text-left font-normal",
-                !endDate && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {endDate ? format(endDate, "PPP") : "End date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={endDate}
-              onSelect={setEndDate}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-
-        {startDate || endDate ? (
-          <Button
-            variant="ghost"
-            className="h-8 px-2"
-            onClick={() => {
-              setStartDate(null);
-              setEndDate(null);
-            }}
-          >
-            Reset dates
-          </Button>
-        ) : null}
-      </div>
+      <DateFilters
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+        onReset={() => {
+          setStartDate(null);
+          setEndDate(null);
+        }}
+      />
 
       {allTags.length > 0 && (
         <div className="flex gap-2 flex-wrap">
