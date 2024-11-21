@@ -3,13 +3,31 @@ import { useExpenses } from "@/context/ExpenseContext";
 import { ExpenseCard } from "./ExpenseCard";
 import { ExpenseForm } from "./ExpenseForm";
 import { Button } from "./ui/button";
+import { Calendar } from "./ui/calendar";
+import { format } from "date-fns";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { CalendarIcon } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 export const ExpenseList = () => {
   const { expenses, addExpense, updateExpense, deleteExpense } = useExpenses();
@@ -17,14 +35,25 @@ export const ExpenseList = () => {
   const [editingExpense, setEditingExpense] = useState<string | null>(null);
   const [deletingExpense, setDeletingExpense] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
   const allTags = Array.from(
     new Set(expenses.flatMap((expense) => expense.tags))
   );
 
-  const filteredExpenses = selectedTag
-    ? expenses.filter((expense) => expense.tags.includes(selectedTag))
-    : expenses;
+  const filteredExpenses = expenses
+    .filter((expense) =>
+      selectedTag ? expense.tags.includes(selectedTag) : true
+    )
+    .filter((expense) => {
+      const expenseDate = new Date(expense.date);
+      const isAfterStart = startDate ? expenseDate >= startDate : true;
+      const isBeforeEnd = endDate
+        ? expenseDate <= new Date(endDate.setHours(23, 59, 59, 999))
+        : true;
+      return isAfterStart && isBeforeEnd;
+    });
 
   const totalAmount = filteredExpenses.reduce(
     (sum, expense) => sum + expense.amount,
@@ -43,6 +72,67 @@ export const ExpenseList = () => {
           </p>
         </div>
         <Button onClick={() => setIsAddDialogOpen(true)}>Add Expense</Button>
+      </div>
+
+      <div className="flex gap-4 flex-wrap items-center">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "justify-start text-left font-normal",
+                !startDate && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {startDate ? format(startDate, "PPP") : "Start date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={startDate}
+              onSelect={setStartDate}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "justify-start text-left font-normal",
+                !endDate && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {endDate ? format(endDate, "PPP") : "End date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={endDate}
+              onSelect={setEndDate}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+
+        {startDate || endDate ? (
+          <Button
+            variant="ghost"
+            className="h-8 px-2"
+            onClick={() => {
+              setStartDate(null);
+              setEndDate(null);
+            }}
+          >
+            Reset dates
+          </Button>
+        ) : null}
       </div>
 
       {allTags.length > 0 && (
