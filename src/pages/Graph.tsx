@@ -1,5 +1,5 @@
 import { useExpenses } from "@/context/ExpenseContext";
-import { format, parse, startOfMonth, endOfMonth } from "date-fns";
+import { format, parse } from "date-fns";
 import {
   ChartContainer,
   ChartTooltip,
@@ -8,7 +8,6 @@ import {
 import {
   Bar,
   BarChart,
-  ResponsiveContainer,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -87,7 +86,7 @@ const Graph = () => {
                   className="fill-primary"
                 />
                 <ChartTooltip>
-                  <ChartTooltipContent />
+                  <ChartTooltipContent formatter={(value: number) => `$${value.toLocaleString()}`} />
                 </ChartTooltip>
               </BarChart>
             </ChartContainer>
