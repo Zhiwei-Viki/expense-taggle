@@ -5,6 +5,13 @@ import { ExpenseForm } from "./ExpenseForm";
 import { Button } from "./ui/button";
 import { DateFilters } from "./DateFilters";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -21,6 +28,8 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
+const ITEMS_PER_PAGE = 20;
+
 export const ExpenseList = () => {
   const { expenses, addExpense, updateExpense, deleteExpense } = useExpenses();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -29,6 +38,7 @@ export const ExpenseList = () => {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const allTags = Array.from(
     new Set(expenses.flatMap((expense) => expense.tags))
@@ -52,8 +62,16 @@ export const ExpenseList = () => {
     0
   );
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredExpenses.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedExpenses = filteredExpenses.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-semibold">
@@ -99,8 +117,8 @@ export const ExpenseList = () => {
         </div>
       )}
 
-      <div className="grid gap-4">
-        {filteredExpenses.map((expense) => (
+      <div className="grid gap-2">
+        {paginatedExpenses.map((expense) => (
           <ExpenseCard
             key={expense.id}
             expense={expense}
@@ -112,6 +130,30 @@ export const ExpenseList = () => {
           <p className="text-center text-gray-500 py-8">No expenses found</p>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <Pagination className="mt-4">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+            <PaginationItem className="flex items-center">
+              <span className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </span>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
 
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent>
